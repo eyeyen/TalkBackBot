@@ -1,0 +1,6 @@
+*~
+*.pyc
+settings.py
+*.log
+*.pid
+tbenv/

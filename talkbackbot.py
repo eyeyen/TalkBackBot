@@ -1,4 +1,4 @@
-import logging
+import logging, time
 
 from twisted.words.protocols import irc
 from twisted.internet import reactor, protocol
@@ -8,13 +8,20 @@ from quotation_selector import QuotationSelector
 
 class TalkBackBot(irc.IRCClient):
 
+    def __init__(self, settings):
+        self.nickname = settings.NICKNAME
+        self.realname = settings.REALNAME
+        self.password = settings.PASSWORD
+
     def connectionMade(self):
         irc.IRCClient.connectionMade(self)
-        logging.info("connectionMade")
+        logging.info("[connected at %s]" %
+                      time.asctime(time.localtime(time.time())))
 
     def connectionLost(self, reason):
         irc.IRCClient.connectionLost(self, reason)
-        logging.info("connectionLost")
+        logging.info("[disconnected at %s]" %
+                      time.asctime(time.localtime(time.time())))
 
     # callbacks for events
 
@@ -57,11 +64,8 @@ class TalkBackBotFactory(protocol.ClientFactory):
         self.quotation = QuotationSelector(self.settings.QUOTES_FILE)
 
     def buildProtocol(self, addr):
-        bot = TalkBackBot()
+        bot = TalkBackBot(self.settings)
         bot.factory = self
-        bot.password = self.settings.PASSWORD
-        bot.nickname = self.settings.NICKNAME
-        bot.realname = self.settings.REALNAME
         return bot
 
     def clientConnectionLost(self, connector, reason):
